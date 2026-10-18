@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://toolbench.surge.sh/sitemap.xml
+Sitemap: https://toolbench22.github.io/sitemap.xml
