@@ -66,6 +66,8 @@
             if (slot.getBoundingClientRect().height < 24) {
               slot.classList.add('ad-empty');
               track('ad_empty', { slot: slot.dataset.adSlot });
+              // 底部固定条被隐藏了，就别再给 body 留 64px 空白
+              if (slot.dataset.adSlot === 'sticky') document.body.classList.remove('has-sticky');
             }
           } catch (e) {
             /* 忽略 */
