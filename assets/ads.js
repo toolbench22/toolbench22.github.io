@@ -103,6 +103,13 @@
   }
 
   var slots = document.querySelectorAll('.ad-slot[data-ad-code="1"]');
+  slots.forEach(function (s) {
+    // 底部锚定条是 fixed 常驻的，必须立刻挂载，不能等 IntersectionObserver
+    if (s.dataset.adSlot === 'sticky') {
+      document.body.classList.add('has-sticky');
+      enqueue(s);
+    }
+  });
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(
       function (entries) {
@@ -116,10 +123,13 @@
       { rootMargin: '250px 0px' }
     );
     slots.forEach(function (s) {
+      if (s.dataset.adSlot === 'sticky') return; // 已单独处理
       io.observe(s);
     });
   } else {
-    slots.forEach(enqueue);
+    slots.forEach(function (s) {
+      enqueue(s);
+    });
   }
 
   /* ---------- 2. popunder：严格 24h 频控后才真正注入 ----------
