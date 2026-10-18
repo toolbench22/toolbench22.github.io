@@ -1,0 +1,4 @@
+# 广告网络后台会给你授权行，例如：
+# adsterra.com, PUB-ID, DIRECT, a1b2c3d4e5f6
+# propellerads.com, PUB-ID, RESELLER
+# 把这些行原样填进 ads.config.json -> adsTxt.lines 后重新构建
