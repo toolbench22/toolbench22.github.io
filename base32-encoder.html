@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Base32 Encoder / Decoder — RFC 4648, UTF-8 Safe</title>
+<meta name="description" content="Encode text to Base32 or decode Base32 back to text using RFC 4648. Optional padding removal, full UTF-8 support, nothing leaves your browser.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://toolbench22.github.io/base32-encoder.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Base32 Encoder / Decoder — RFC 4648, UTF-8 Safe">
+<meta property="og:description" content="Encode text to Base32 or decode Base32 back to text using RFC 4648. Optional padding removal, full UTF-8 support, nothing leaves your browser.">
+<meta property="og:url" content="https://toolbench22.github.io/base32-encoder.html">
+<meta property="og:site_name" content="ToolBench">
+<meta name="theme-color" content="#1f6feb">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/style.css">
+<link rel="preload" href="/assets/style.css" as="style">
+<link rel="dns-prefetch" href="//abscloud.org">
+<link rel="dns-prefetch" href="//bauval.org">
+<link rel="preconnect" href="https://abscloud.org" crossorigin>
+<link rel="preconnect" href="https://bauval.org" crossorigin>
+<meta name="google-site-verification" content="nvFmr2Y09uILqNPKz_eTmnw3nukkjsEVcvH1v8O_cSw">
+
+
+</head>
+<body data-popunder="1">
+<!-- popunder: 24h 频控通过后由 ads.js 注入（模板内容不会自动执行） --><template data-popunder-tpl><script data-cfasync="false" src="https://abscloud.org/1/52ab51a2fde7f721131d4786f60a3160"></script></template>
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="/">Tool<span>Bench</span></a>
+    <nav>
+      <a href="/">All tools</a>
+      <a href="/about.html">About</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+<p class="crumb"><a href="/">All tools</a> / <a href="/#developer">Developer</a> / Base32 Encoder</p><div class="page-head"><h1>Base32 Encoder &amp; Decoder</h1><p class="lede">Encode text to Base32 or decode Base32 back to text using RFC 4648. Optional padding removal, full UTF-8 support, nothing leaves your browser.</p></div><div class="ad-slot" data-ad-slot="top" data-ad-code="1"><template data-ad-code="1"><script>
+  atOptions = {
+    'key' : '9e0a8aa81d81fa6276b985afba8f4160',
+    'format' : 'iframe',
+    'height' : 90,
+    'width' : 728,
+    'params' : {}
+  };
+</script>
+<script src="https://bauval.org/22/9e0a8aa81d81fa6276b985afba8f4160"></script></template></div><div class="panel" id="tool" data-tool="base32-encoder"></div><noscript><p class="err">This tool needs JavaScript. All processing happens in your browser, so JavaScript is the whole engine.</p></noscript><section class="doc"><h2>How to use the Base32 Encoder</h2><ol><li>Type or paste your text on the left and press Encode to get Base32.</li><li>To decode, paste the Base32 string and press Decode. Padding characters (=) and spaces are ignored.</li><li>Tick &quot;No padding&quot; when the output feeds a system that rejects trailing equals signs.</li></ol><h2>Frequently asked questions</h2><details><summary>Where is Base32 used instead of Base64?</summary><p>Base32 only uses A-Z and 2-7, so it survives case-insensitive systems, hand transcription and human error. TOTP secrets and some DNS records use it; Base64 is more compact but case-sensitive.</p></details><details><summary>Is Base32 encryption?</summary><p>No. It is a reversible encoding with no key, so anyone can decode it instantly. Never use it to protect a password or token.</p></details><details><summary>Why do I get an error when decoding?</summary><p>Base32 only allows A-Z and 2-7 after removing padding. Any other character (including 0, 1, 8, 9) is invalid and the decoder reports which one it hit.</p></details><h2>Related tools</h2><div class="grid"><a class="card" href="/json-formatter.html" data-search="json formatter beautify, validate and minify json with clear error messages. json formatter json validator json beautifier json pretty print minify json developer"><b>JSON Formatter</b><span>Beautify, validate and minify JSON with clear error messages.</span></a><a class="card" href="/base64-encoder.html" data-search="base64 encoder encode or decode base64 with utf-8 and url-safe alphabet support. base64 encode base64 decode base64 converter url safe base64 base64 online developer"><b>Base64 Encoder</b><span>Encode or decode Base64 with UTF-8 and URL-safe alphabet support.</span></a><a class="card" href="/url-encoder.html" data-search="url encoder percent-encode values or decode urls, plus a readable query table. url encoder url decoder percent encoding encodeuricomponent online query string parser developer"><b>URL Encoder</b><span>Percent-encode values or decode URLs, plus a readable query table.</span></a><a class="card" href="/timestamp-converter.html" data-search="timestamp converter epoch seconds or milliseconds to a readable date, and back. unix timestamp converter epoch converter timestamp to date date to timestamp iso 8601 developer"><b>Timestamp Converter</b><span>Epoch seconds or milliseconds to a readable date, and back.</span></a><a class="card" href="/uuid-generator.html" data-search="uuid generator bulk random v4 uuids from a cryptographically secure source. uuid generator guid generator uuid v4 random uuid bulk uuid developer"><b>UUID Generator</b><span>Bulk random v4 UUIDs from a cryptographically secure source.</span></a><a class="card" href="/color-converter.html" data-search="color converter hex to rgb and hsl with a readable-text suggestion. hex to rgb rgb to hex hsl converter color converter contrast luminance developer"><b>Color Converter</b><span>HEX to RGB and HSL with a readable-text suggestion.</span></a></div></section>
+</main>
+
+<div class="wrap"><div class="ad-slot" data-ad-slot="sticky" data-ad-code="1"><template data-ad-code="1"><script>
+  atOptions = {
+    'key' : '08b84fe4bbb3f3335d91dcfacf8b76ca',
+    'format' : 'iframe',
+    'height' : 50,
+    'width' : 320,
+    'params' : {}
+  };
+</script>
+<script src="https://bauval.org/22/08b84fe4bbb3f3335d91dcfacf8b76ca"></script></template></div></div>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>&copy; 2026 ToolBench. All tools run locally in your browser.</span>
+    <a href="/about.html">About</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/dmca.html">DMCA</a>
+    <a href="/contact.html">Contact</a>
+    <a href="/sitemap.xml">Sitemap</a>
+  </div>
+</footer>
+
+<script src="/assets/ads.js" defer></script>
+<script src="/assets/tools-core.js" defer></script>
+<script src="/assets/app.js" defer></script>
+
+<script type="application/ld+json">[{"@context":"https://schema.org","@type":"WebApplication","name":"Base32 Encoder & Decoder","url":"https://toolbench22.github.io/base32-encoder.html","applicationCategory":"UtilitiesApplication","operatingSystem":"Any (web browser)","description":"Encode text to Base32 or decode Base32 back to text using RFC 4648. Optional padding removal, full UTF-8 support, nothing leaves your browser.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"browserRequirements":"Requires JavaScript"},{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Where is Base32 used instead of Base64?","acceptedAnswer":{"@type":"Answer","text":"Base32 only uses A-Z and 2-7, so it survives case-insensitive systems, hand transcription and human error. TOTP secrets and some DNS records use it; Base64 is more compact but case-sensitive."}},{"@type":"Question","name":"Is Base32 encryption?","acceptedAnswer":{"@type":"Answer","text":"No. It is a reversible encoding with no key, so anyone can decode it instantly. Never use it to protect a password or token."}},{"@type":"Question","name":"Why do I get an error when decoding?","acceptedAnswer":{"@type":"Answer","text":"Base32 only allows A-Z and 2-7 after removing padding. Any other character (including 0, 1, 8, 9) is invalid and the decoder reports which one it hit."}}]},{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"All tools","item":"https://toolbench22.github.io/"},{"@type":"ListItem","position":2,"name":"Base32 Encoder","item":"https://toolbench22.github.io/base32-encoder.html"}]}]</script>
+</body>
+</html>

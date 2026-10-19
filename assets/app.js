@@ -888,6 +888,393 @@
         run();
       },
     },
+
+    /* ---------- 23 Base32 ---------- */
+    'base32-encoder': {
+      mount: function (root) {
+        root.innerHTML =
+          '<div class="cols">' +
+          '<div class="field"><span>Plain text</span><textarea id="b32In" spellcheck="false" placeholder="Type text, or paste Base32 to decode"></textarea></div>' +
+          '<div class="field"><span>Base32 (RFC 4648)</span><textarea id="b32Out" spellcheck="false" readonly></textarea></div>' +
+          '</div>' +
+          '<div class="btns"><button class="primary" id="b32Enc">Encode</button><button id="b32Dec">Decode</button>' +
+          '<label class="check"><input type="checkbox" id="b32NoPad"> No padding</label>' + copyBtn('#b32Out') + '</div>' +
+          err('b32Err');
+        var i = $('#b32In', root),
+          o = $('#b32Out', root);
+        $('#b32Enc', root).onclick = function () {
+          try {
+            o.value = T.b32Encode(i.value, $('#b32NoPad', root).checked);
+            setErr('b32Err', '', root);
+          } catch (e) {
+            setErr('b32Err', e.message, root);
+          }
+        };
+        $('#b32Dec', root).onclick = function () {
+          try {
+            o.value = T.b32Decode(i.value);
+            setErr('b32Err', '', root);
+          } catch (e) {
+            o.value = '';
+            setErr('b32Err', e.message, root);
+          }
+        };
+      },
+    },
+
+    /* ---------- 24 摩尔斯 ---------- */
+    'morse-code-translator': {
+      mount: function (root) {
+        root.innerHTML =
+          '<div class="cols">' +
+          '<div class="field"><span>Text</span><textarea id="morIn" spellcheck="false" style="min-height:110px">SOS help</textarea></div>' +
+          '<div class="field"><span>Morse code</span><textarea id="morOut" spellcheck="false" style="min-height:110px"></textarea></div>' +
+          '</div>' +
+          '<div class="btns"><button class="primary" id="morTo">Text → Morse</button><button id="morFrom">Morse → Text</button>' + copyBtn('#morOut') + '</div>' +
+          '<p class="hint">Letters are separated by a space, words by <code>/</code>. Both directions accept that format.</p>';
+        $('#morTo', root).onclick = function () {
+          $('#morOut', root).value = T.toMorse($('#morIn', root).value);
+        };
+        $('#morFrom', root).onclick = function () {
+          $('#morOut', root).value = T.fromMorse($('#morIn', root).value);
+        };
+        $('#morOut', root).value = T.toMorse('SOS help');
+      },
+    },
+
+    /* ---------- 25 罗马数字 ---------- */
+    'roman-numeral-converter': {
+      mount: function (root) {
+        root.innerHTML =
+          '<label class="field"><span>Number (1–3999) or Roman numeral</span>' +
+          '<input type="text" id="romIn" value="1994" spellcheck="false" placeholder="1994  or  MCMXCIV"></label>' +
+          '<div id="romRes" style="margin-top:14px"></div>' + err('romErr');
+        function run() {
+          var v = $('#romIn', root).value.trim();
+          if (!v) {
+            $('#romRes', root).innerHTML = '';
+            setErr('romErr', '', root);
+            return;
+          }
+          var box = $('#romRes', root);
+          if (/^\d+$/.test(v)) {
+            var r = T.toRoman(v);
+            if (!r.ok) {
+              box.innerHTML = '';
+              setErr('romErr', r.error, root);
+              return;
+            }
+            setErr('romErr', '', root);
+            box.innerHTML = '<div class="stat" style="padding:16px"><b style="font-size:26px;font-family:var(--mono)">' + esc(r.value) + '</b><span>' + esc(v) + ' in Roman numerals</span></div>';
+          } else {
+            var f = T.fromRoman(v);
+            if (!f.ok) {
+              box.innerHTML = '';
+              setErr('romErr', f.error, root);
+              return;
+            }
+            setErr('romErr', '', root);
+            box.innerHTML = '<div class="stat" style="padding:16px"><b style="font-size:26px;font-family:var(--mono)">' + esc(f.value) + '</b><span>' + esc(v.toUpperCase()) + ' in decimal</span></div>';
+          }
+        }
+        $('#romIn', root).addEventListener('input', run);
+        run();
+      },
+    },
+
+    /* ---------- 26 文本反转 ---------- */
+    'text-reverser': {
+      mount: function (root) {
+        var modes = [
+          ['chars', 'Reverse characters'],
+          ['words', 'Reverse word order'],
+          ['lines', 'Reverse line order'],
+        ];
+        root.innerHTML =
+          '<div class="field"><span>Input</span><textarea id="revIn" spellcheck="false" style="min-height:140px"></textarea></div>' +
+          '<div class="btns">' + modes.map(function (m) {
+            return '<button data-rev="' + m[0] + '">' + m[1] + '</button>';
+          }).join('') + '</div>' +
+          '<div class="field" style="margin-top:12px"><span>Result</span><textarea id="revOut" spellcheck="false" readonly style="min-height:140px"></textarea></div>' +
+          '<div class="btns">' + copyBtn('#revOut') + '<button id="revSample">Load sample</button></div>';
+        function run(mode) {
+          $('#revOut', root).value = T.reverseText($('#revIn', root).value, mode);
+        }
+        $$('[data-rev]', root).forEach(function (b) {
+          b.onclick = function () {
+            run(b.dataset.rev);
+          };
+        });
+        $('#revSample', root).onclick = function () {
+          $('#revIn', root).value = 'The quick brown fox\njumps over the lazy dog\n中文也支持 😀';
+          run('chars');
+        };
+        $('#revIn', root).value = 'The quick brown fox\njumps over the lazy dog';
+        run('chars');
+      },
+    },
+
+    /* ---------- 27 随机数 ---------- */
+    'random-number-generator': {
+      mount: function (root) {
+        root.innerHTML =
+          '<div class="row">' +
+          '<label class="field"><span>Min</span><input type="number" id="rnMin" value="1"></label>' +
+          '<label class="field"><span>Max</span><input type="number" id="rnMax" value="100"></label>' +
+          '<label class="field"><span>How many</span><input type="number" id="rnCount" value="10" min="1" max="1000"></label>' +
+          '<label class="field"><span>Decimals</span><input type="number" id="rnDec" value="0" min="0" max="8"></label>' +
+          '<label class="check"><input type="checkbox" id="rnUnique"> Unique only</label>' +
+          '<button class="primary" id="rnGo">Generate</button>' + copyBtn('#rnOut') +
+          '</div>' +
+          '<textarea id="rnOut" spellcheck="false" readonly style="margin-top:12px;min-height:200px"></textarea>' +
+          err('rnErr');
+        function run() {
+          var r = T.randomNumbers($('#rnMin', root).value, $('#rnMax', root).value, $('#rnCount', root).value, {
+            unique: $('#rnUnique', root).checked,
+            decimals: $('#rnDec', root).value,
+          });
+          if (!r.ok) {
+            $('#rnOut', root).value = '';
+            setErr('rnErr', r.error, root);
+            return;
+          }
+          setErr('rnErr', '', root);
+          $('#rnOut', root).value = r.values.join('\n');
+        }
+        $('#rnGo', root).onclick = run;
+        run();
+      },
+    },
+
+    /* ---------- 28 百分比 ---------- */
+    'percent-calculator': {
+      mount: function (root) {
+        root.innerHTML =
+          '<label class="field"><span>What do you want to calculate?</span><select id="pcMode">' +
+          '<option value="of">X% of a number</option>' +
+          '<option value="is">X is what percent of Y</option>' +
+          '<option value="change">Percent change from X to Y</option>' +
+          '<option value="add">Increase X by Y%</option>' +
+          '<option value="sub">Decrease X by Y%</option>' +
+          '</select></label>' +
+          '<div class="row" style="margin-top:12px">' +
+          '<label class="field"><span id="pcALabel">X (%)</span><input type="text" id="pcA" value="20"></label>' +
+          '<label class="field"><span id="pcBLabel">Y (number)</span><input type="text" id="pcB" value="150"></label>' +
+          '</div>' +
+          '<div id="pcRes" style="margin-top:14px"></div>' + err('pcErr');
+        function labels() {
+          var m = $('#pcMode', root).value;
+          var map = {
+            of: ['Percentage (%)', 'Of number'],
+            is: ['Number X', 'Number Y'],
+            change: ['Starting value', 'New value'],
+            add: ['Number X', 'Increase by (%)'],
+            sub: ['Number X', 'Decrease by (%)'],
+          };
+          $('#pcALabel', root).textContent = map[m][0];
+          $('#pcBLabel', root).textContent = map[m][1];
+        }
+        function run() {
+          var r = T.percentCalc($('#pcMode', root).value, $('#pcA', root).value, $('#pcB', root).value);
+          if (!r.ok) {
+            $('#pcRes', root).innerHTML = '';
+            setErr('pcErr', r.error, root);
+            return;
+          }
+          setErr('pcErr', '', root);
+          $('#pcRes', root).innerHTML =
+            '<div class="stat" style="padding:16px"><b style="font-size:26px">' + esc(r.value) + '</b><span>' + esc(r.label) + '</span></div>';
+        }
+        $('#pcMode', root).onchange = function () {
+          labels();
+          run();
+        };
+        ['pcA', 'pcB'].forEach(function (id) {
+          $('#' + id, root).addEventListener('input', run);
+        });
+        labels();
+        run();
+      },
+    },
+
+    /* ---------- 29 年龄 ---------- */
+    'age-calculator': {
+      mount: function (root) {
+        var today = new Date().toISOString().slice(0, 10);
+        root.innerHTML =
+          '<div class="row">' +
+          '<label class="field"><span>Date of birth</span><input type="date" id="ageDob" value="1996-02-23"></label>' +
+          '<label class="field"><span>Calculate as of</span><input type="date" id="ageAs" value="' + today + '"></label>' +
+          '</div>' +
+          '<div id="ageRes" style="margin-top:14px"></div>' + err('ageErr');
+        function run() {
+          var r = T.ageFromDate($('#ageDob', root).value, $('#ageAs', root).value);
+          if (!r.ok) {
+            $('#ageRes', root).innerHTML = '';
+            setErr('ageErr', r.error, root);
+            return;
+          }
+          setErr('ageErr', '', root);
+          var rows = [
+            ['Age', r.years + ' y ' + r.months + ' m ' + r.days + ' d'],
+            ['Total days', r.totalDays.toLocaleString()],
+            ['Total weeks', r.weeks.toLocaleString()],
+            ['Total months', r.totalMonths.toLocaleString()],
+            ['Born on a', r.weekdayBorn],
+            ['Next birthday in', r.nextBirthdayInDays + ' days'],
+          ];
+          $('#ageRes', root).innerHTML = '<div class="stat-grid">' + rows.map(function (p) {
+            return '<div class="stat"><b style="font-size:15px">' + esc(p[1]) + '</b><span>' + esc(p[0]) + '</span></div>';
+          }).join('') + '</div>';
+        }
+        ['ageDob', 'ageAs'].forEach(function (id) {
+          $('#' + id, root).addEventListener('input', run);
+          $('#' + id, root).addEventListener('change', run);
+        });
+        run();
+      },
+    },
+
+    /* ---------- 30 日期差 ---------- */
+    'date-difference-calculator': {
+      mount: function (root) {
+        var today = new Date().toISOString().slice(0, 10);
+        root.innerHTML =
+          '<div class="row">' +
+          '<label class="field"><span>From</span><input type="date" id="ddA" value="2026-01-01"></label>' +
+          '<label class="field"><span>To</span><input type="date" id="ddB" value="' + today + '"></label>' +
+          '<button id="ddSwap">Swap</button>' +
+          '</div>' +
+          '<div id="ddRes" style="margin-top:14px"></div>' + err('ddErr');
+        function run() {
+          var r = T.dateDiff($('#ddA', root).value, $('#ddB', root).value);
+          if (!r.ok) {
+            $('#ddRes', root).innerHTML = '';
+            setErr('ddErr', r.error, root);
+            return;
+          }
+          setErr('ddErr', '', root);
+          var rows = [
+            ['Days', r.days.toLocaleString()],
+            ['Business days', r.businessDays.toLocaleString()],
+            ['Weekend days', r.weekends.toLocaleString()],
+            ['Weeks', r.weeks],
+            ['Months (avg)', r.months],
+            ['Years (avg)', r.years],
+            ['Hours', r.hours.toLocaleString()],
+          ];
+          $('#ddRes', root).innerHTML = '<div class="stat-grid">' + rows.map(function (p) {
+            return '<div class="stat"><b style="font-size:15px">' + esc(p[1]) + '</b><span>' + esc(p[0]) + '</span></div>';
+          }).join('') + '</div>';
+        }
+        $('#ddSwap', root).onclick = function () {
+          var a = $('#ddA', root).value;
+          $('#ddA', root).value = $('#ddB', root).value;
+          $('#ddB', root).value = a;
+          run();
+        };
+        ['ddA', 'ddB'].forEach(function (id) {
+          $('#' + id, root).addEventListener('input', run);
+          $('#' + id, root).addEventListener('change', run);
+        });
+        run();
+      },
+    },
+
+    /* ---------- 31 宽高比 ---------- */
+    'aspect-ratio-calculator': {
+      mount: function (root) {
+        root.innerHTML =
+          '<div class="row">' +
+          '<label class="field"><span>Original width</span><input type="number" id="arW" value="1920"></label>' +
+          '<label class="field"><span>Original height</span><input type="number" id="arH" value="1080"></label>' +
+          '<label class="field"><span>New width (optional)</span><input type="number" id="arNW" value="800"></label>' +
+          '<label class="field"><span>New height (optional)</span><input type="number" id="arNH" value=""></label>' +
+          '</div>' +
+          '<div id="arRes" style="margin-top:14px"></div>' + err('arErr');
+        function run() {
+          var r = T.aspectRatio($('#arW', root).value, $('#arH', root).value, $('#arNW', root).value, $('#arNH', root).value);
+          if (!r.ok) {
+            $('#arRes', root).innerHTML = '';
+            setErr('arErr', r.error, root);
+            return;
+          }
+          setErr('arErr', '', root);
+          var rows = [['Aspect ratio', r.ratio]];
+          if (r.preset) rows.push(['Common name', r.preset]);
+          rows.push(['Decimal', String(r.decimal)]);
+          if (r.newHeight) rows.push(['Height at new width', r.newHeight + 'px']);
+          if (r.newWidth) rows.push(['Width at new height', r.newWidth + 'px']);
+          $('#arRes', root).innerHTML = '<div class="stat-grid">' + rows.map(function (p) {
+            return '<div class="stat"><b style="font-size:16px">' + esc(p[1]) + '</b><span>' + esc(p[0]) + '</span></div>';
+          }).join('') + '</div>';
+        }
+        ['arW', 'arH', 'arNW', 'arNH'].forEach(function (id) {
+          $('#' + id, root).addEventListener('input', run);
+        });
+        run();
+      },
+    },
+
+    /* ---------- 32 CIDR ---------- */
+    'cidr-calculator': {
+      mount: function (root) {
+        root.innerHTML =
+          '<label class="field"><span>IPv4 address with optional prefix</span>' +
+          '<input type="text" id="ciIn" value="192.168.1.10/24" spellcheck="false" placeholder="192.168.1.10/24"></label>' +
+          '<div id="ciRes" style="margin-top:14px"></div>' + err('ciErr');
+        function run() {
+          var r = T.cidrInfo($('#ciIn', root).value);
+          if (!r.ok) {
+            $('#ciRes', root).innerHTML = '';
+            setErr('ciErr', r.error, root);
+            return;
+          }
+          setErr('ciErr', '', root);
+          var rows = [
+            ['Network', r.cidr],
+            ['Netmask', r.netmask],
+            ['Wildcard', r.wildcard],
+            ['Broadcast', r.broadcast],
+            ['First host', r.firstHost],
+            ['Last host', r.lastHost],
+            ['Usable hosts', r.usableHosts.toLocaleString()],
+            ['Addresses', r.addressCount.toLocaleString()],
+            ['Scope', r.scope],
+            ['Binary mask', r.binaryMask],
+          ];
+          $('#ciRes', root).innerHTML = '<div class="stat-grid">' + rows.map(function (p) {
+            return '<div class="stat"><b style="font-size:13px;font-family:var(--mono);word-break:break-all">' + esc(p[1]) + '</b><span>' + esc(p[0]) + '</span></div>';
+          }).join('') + '</div>';
+        }
+        $('#ciIn', root).addEventListener('input', run);
+        run();
+      },
+    },
+
+    /* ---------- 33 Unicode ---------- */
+    'unicode-inspector': {
+      mount: function (root) {
+        root.innerHTML =
+          '<label class="field"><span>Text (first 400 characters are inspected)</span>' +
+          '<textarea id="uniIn" spellcheck="false" style="min-height:100px">A 中 😀</textarea></label>' +
+          '<div id="uniRes" style="margin-top:14px"></div>';
+        function run() {
+          var r = T.unicodePoints($('#uniIn', root).value);
+          var rows = r.points.map(function (p) {
+            return (
+              '<div class="stat"><b style="font-size:16px;font-family:var(--mono)">' + esc(p.hex) + '</b>' +
+              '<span>' + (p.char === ' ' ? '(space)' : esc(p.char)) + ' · ' + p.dec + ' · ' + p.bytes + 'B · ' + esc(p.type) + '</span></div>'
+            );
+          });
+          $('#uniRes', root).innerHTML =
+            '<p class="hint">' + r.total + ' characters' + (r.truncated ? ' (showing first 400)' : '') + '</p>' +
+            '<div class="stat-grid">' + rows.join('') + '</div>';
+        }
+        $('#uniIn', root).addEventListener('input', run);
+        run();
+      },
+    },
   };
 
   /* ================= 首页搜索 ================= */

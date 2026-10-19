@@ -885,6 +885,410 @@
     return (n / Math.pow(1024, i)).toFixed(i ? 2 : 0) + ' ' + u[i];
   }
 
+  /* ---------------- 23. Base32 ---------------- */
+  var B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  function b32Encode(text, noPad) {
+    var bytes = new TextEncoder().encode(String(text));
+    var out = '';
+    var bits = 0;
+    var value = 0;
+    for (var i = 0; i < bytes.length; i++) {
+      value = (value << 8) | bytes[i];
+      bits += 8;
+      while (bits >= 5) {
+        out += B32[(value >>> (bits - 5)) & 31];
+        bits -= 5;
+      }
+    }
+    if (bits > 0) out += B32[(value << (5 - bits)) & 31];
+    if (!noPad) while (out.length % 8) out += '=';
+    return out;
+  }
+  function b32Decode(text) {
+    var s = String(text).toUpperCase().replace(/[=\s]/g, '');
+    var bytes = [];
+    var bits = 0;
+    var value = 0;
+    for (var i = 0; i < s.length; i++) {
+      var idx = B32.indexOf(s[i]);
+      if (idx < 0) throw new Error('Invalid Base32 character: ' + s[i]);
+      value = (value << 5) | idx;
+      bits += 5;
+      if (bits >= 8) {
+        bytes.push((value >>> (bits - 8)) & 255);
+        bits -= 8;
+      }
+    }
+    return new TextDecoder('utf-8', { fatal: false }).decode(new Uint8Array(bytes));
+  }
+
+  /* ---------------- 24. 摩尔斯电码 ---------------- */
+  var MORSE = {
+    A: '.-', B: '-...', C: '-.-.', D: '-..', E: '.', F: '..-.', G: '--.', H: '....',
+    I: '..', J: '.---', K: '-.-', L: '.-..', M: '--', N: '-.', O: '---', P: '.--.',
+    Q: '--.-', R: '.-.', S: '...', T: '-', U: '..-', V: '...-', W: '.--', X: '-..-',
+    Y: '-.--', Z: '--..',
+    0: '-----', 1: '.----', 2: '..---', 3: '...--', 4: '....-',
+    5: '.....', 6: '-....', 7: '--...', 8: '---..', 9: '----.',
+    '.': '.-.-.-', ',': '--..--', '?': '..--..', "'": '.----.', '!': '-.-.--',
+    '/': '-..-.', '(': '-.--.', ')': '-.--.-', '&': '.-...', ':': '---...',
+    ';': '-.-.-.', '=': '-...-', '+': '.-.-.', '-': '-....-', _: '..--.-',
+    '"': '.-..-.', $: '...-..-', '@': '.--.-.',
+  };
+  var MORSE_REV = (function () {
+    var o = {};
+    Object.keys(MORSE).forEach(function (k) {
+      o[MORSE[k]] = k;
+    });
+    return o;
+  })();
+
+  function toMorse(text) {
+    var words = String(text).toUpperCase().trim().split(/\s+/);
+    return words
+      .map(function (w) {
+        return w
+          .split('')
+          .map(function (ch) {
+            return MORSE[ch] || ''; // 未知字符直接丢掉
+          })
+          .filter(Boolean)
+          .join(' ');
+      })
+      .filter(Boolean)
+      .join(' / ');
+  }
+  function fromMorse(code) {
+    return String(code)
+      .trim()
+      .split(/\s*\/\s*/)
+      .map(function (w) {
+        return w
+          .trim()
+          .split(/\s+/)
+          .map(function (c) {
+            return MORSE_REV[c] || '';
+          })
+          .join('');
+      })
+      .join(' ')
+      .trim();
+  }
+
+  /* ---------------- 25. 罗马数字 ---------------- */
+  var ROMAN = [
+    [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'],
+    [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I'],
+  ];
+  function toRoman(n) {
+    var num = Math.floor(Number(n));
+    if (!isFinite(num) || num < 1 || num > 3999) return { ok: false, error: 'Enter an integer between 1 and 3999.' };
+    var out = '';
+    var rest = num;
+    for (var i = 0; i < ROMAN.length; i++) {
+      while (rest >= ROMAN[i][0]) {
+        out += ROMAN[i][1];
+        rest -= ROMAN[i][0];
+      }
+    }
+    return { ok: true, value: out };
+  }
+  function fromRoman(s) {
+    var str = String(s).toUpperCase().replace(/\s+/g, '');
+    if (!/^[MDCLXVI]+$/.test(str)) return { ok: false, error: 'Only the letters I V X L C D M are allowed.' };
+    var map = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };
+    var total = 0;
+    for (var i = 0; i < str.length; i++) {
+      var cur = map[str[i]];
+      var next = map[str[i + 1]] || 0;
+      total += cur < next ? -cur : cur;
+    }
+    // 校验：来回转换一致才算合法（排除 IIII 这类写法）
+    var back = toRoman(total);
+    if (!back.ok || back.value !== str) return { ok: false, error: 'Not a valid Roman numeral (canonical form would be ' + (back.ok ? back.value : '?') + ').' };
+    return { ok: true, value: total };
+  }
+
+  /* ---------------- 26. 文本反转 ---------------- */
+  function reverseText(text, mode) {
+    var s = String(text);
+    if (mode === 'words') {
+      return s
+        .split('\n')
+        .map(function (line) {
+          return line.trim().split(/\s+/).filter(Boolean).reverse().join(' ');
+        })
+        .join('\n');
+    }
+    if (mode === 'lines') {
+      return s.split('\n').reverse().join('\n');
+    }
+    // chars：按码位反转，避免把 emoji 拆坏
+    return Array.from(s).reverse().join('');
+  }
+
+  /* ---------------- 27. 随机数 ---------------- */
+  function randomNumbers(min, max, count, opts) {
+    opts = opts || {};
+    var lo = Number(min);
+    var hi = Number(max);
+    if (!isFinite(lo) || !isFinite(hi)) return { ok: false, error: 'Min and max must be numbers.' };
+    if (lo > hi) {
+      var t = lo;
+      lo = hi;
+      hi = t;
+    }
+    var n = Math.min(Math.max(Math.floor(Number(count) || 1), 1), 1000);
+    var decimals = Math.min(Math.max(Math.floor(Number(opts.decimals) || 0), 0), 8);
+    var unique = !!opts.unique;
+    var span = hi - lo;
+    if (unique && decimals === 0 && span + 1 < n) {
+      return { ok: false, error: 'Range only has ' + (span + 1) + ' integers, cannot produce ' + n + ' unique values.' };
+    }
+    var out = [];
+    var seen = Object.create(null);
+    var guard = 0;
+    while (out.length < n) {
+      var v;
+      if (decimals > 0) {
+        var r = new Uint32Array(1);
+        rnd32(r);
+        v = lo + (r[0] / 4294967296) * span;
+        v = Number(v.toFixed(decimals));
+      } else {
+        var ri = new Uint32Array(1);
+        rnd32(ri);
+        v = lo + (ri[0] % (Math.floor(span) + 1));
+      }
+      if (unique) {
+        var key = String(v);
+        if (seen[key]) {
+          if (++guard > 20000) return { ok: false, error: 'Could not find enough unique values, widen the range.' };
+          continue;
+        }
+        seen[key] = 1;
+      }
+      out.push(v);
+      if (++guard > 200000) break;
+    }
+    return { ok: true, values: out, min: lo, max: hi };
+  }
+
+  /* ---------------- 28. 百分比 ---------------- */
+  function percentCalc(mode, a, b) {
+    var x = Number(a);
+    var y = Number(b);
+    if (!isFinite(x) || !isFinite(y)) return { ok: false, error: 'Both values must be numbers.' };
+    var label = '';
+    var value = 0;
+    if (mode === 'of') {
+      value = (x / 100) * y;
+      label = x + '% of ' + y;
+    } else if (mode === 'is') {
+      if (y === 0) return { ok: false, error: 'Cannot divide by zero.' };
+      value = (x / y) * 100;
+      label = x + ' is what percent of ' + y;
+    } else if (mode === 'change') {
+      if (x === 0) return { ok: false, error: 'Starting value cannot be zero for a change calculation.' };
+      value = ((y - x) / Math.abs(x)) * 100;
+      label = 'change from ' + x + ' to ' + y;
+    } else if (mode === 'add') {
+      value = x + (x * y) / 100;
+      label = x + ' increased by ' + y + '%';
+    } else if (mode === 'sub') {
+      value = x - (x * y) / 100;
+      label = x + ' decreased by ' + y + '%';
+    } else {
+      return { ok: false, error: 'Unknown mode.' };
+    }
+    return { ok: true, value: Number(value.toPrecision(12)), label: label };
+  }
+
+  /* ---------------- 29. 年龄计算 ---------------- */
+  function ageFromDate(dobISO, nowISO) {
+    var dob = new Date(String(dobISO).trim());
+    var now = nowISO ? new Date(String(nowISO).trim()) : new Date();
+    if (isNaN(dob.getTime())) return { ok: false, error: 'Enter a valid birth date, e.g. 1996-02-23.' };
+    if (isNaN(now.getTime())) return { ok: false, error: 'Reference date is invalid.' };
+    if (dob > now) return { ok: false, error: 'Birth date is in the future.' };
+
+    var years = now.getUTCFullYear() - dob.getUTCFullYear();
+    var months = now.getUTCMonth() - dob.getUTCMonth();
+    var days = now.getUTCDate() - dob.getUTCDate();
+    if (days < 0) {
+      months--;
+      var prevMonthDays = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0)).getUTCDate();
+      days += prevMonthDays;
+    }
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
+    var totalDays = Math.floor((Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - Date.UTC(dob.getUTCFullYear(), dob.getUTCMonth(), dob.getUTCDate())) / 86400000);
+
+    // 下一个生日
+    var next = new Date(Date.UTC(now.getUTCFullYear(), dob.getUTCMonth(), dob.getUTCDate()));
+    if (next < new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))) {
+      next = new Date(Date.UTC(now.getUTCFullYear() + 1, dob.getUTCMonth(), dob.getUTCDate()));
+    }
+    var toBirthday = Math.round((next - Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())) / 86400000);
+
+    return {
+      ok: true,
+      years: years,
+      months: months,
+      days: days,
+      totalDays: totalDays,
+      weeks: Math.floor(totalDays / 7),
+      totalMonths: years * 12 + months,
+      nextBirthdayInDays: toBirthday,
+      weekdayBorn: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dob.getUTCDay()],
+    };
+  }
+
+  /* ---------------- 30. 日期差 ---------------- */
+  function dateDiff(fromISO, toISO) {
+    var a = new Date(String(fromISO).trim());
+    var b = new Date(String(toISO).trim());
+    if (isNaN(a.getTime()) || isNaN(b.getTime())) return { ok: false, error: 'Enter two valid dates.' };
+    var ua = Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate());
+    var ub = Date.UTC(b.getUTCFullYear(), b.getUTCMonth(), b.getUTCDate());
+    var sign = ub >= ua ? 1 : -1;
+    var lo = Math.min(ua, ub);
+    var hi = Math.max(ua, ub);
+    var days = Math.round((hi - lo) / 86400000);
+    var business = 0;
+    for (var t = lo; t < hi; t += 86400000) {
+      var d = new Date(t).getUTCDay();
+      if (d !== 0 && d !== 6) business++;
+    }
+    var years = Math.floor(days / 365.25);
+    return {
+      ok: true,
+      days: days * sign,
+      weeks: Number(((days / 7) * sign).toFixed(2)),
+      months: Number(((days / 30.4375) * sign).toFixed(2)),
+      years: Number(((days / 365.25) * sign).toFixed(2)),
+      businessDays: business * sign,
+      weekends: (days - business) * sign,
+      hours: days * 24 * sign,
+    };
+  }
+
+  /* ---------------- 31. 宽高比 ---------------- */
+  function gcd(a, b) {
+    a = Math.abs(Math.round(a));
+    b = Math.abs(Math.round(b));
+    while (b) {
+      var t = b;
+      b = a % b;
+      a = t;
+    }
+    return a || 1;
+  }
+  function aspectRatio(w, h, newW, newH) {
+    var width = Number(w);
+    var height = Number(h);
+    if (!(width > 0) || !(height > 0)) return { ok: false, error: 'Width and height must be positive numbers.' };
+    var g = gcd(width, height);
+    var rw = Math.round(width / g);
+    var rh = Math.round(height / g);
+    var out = {
+      ok: true,
+      ratio: rw + ':' + rh,
+      decimal: Number((width / height).toFixed(4)),
+      simplifiedFrom: width + 'x' + height,
+      preset: '',
+    };
+    // 常见比例匹配
+    var presets = { '16:9': 16 / 9, '4:3': 4 / 3, '21:9': 21 / 9, '1:1': 1, '3:2': 3 / 2, '9:16': 9 / 16, '2:3': 2 / 3, '4:5': 4 / 5 };
+    Object.keys(presets).forEach(function (k) {
+      if (!out.preset && Math.abs(width / height - presets[k]) < 0.01) out.preset = k;
+    });
+    if (Number(newW) > 0) out.newHeight = Math.round((Number(newW) * height) / width);
+    if (Number(newH) > 0) out.newWidth = Math.round((Number(newH) * width) / height);
+    return out;
+  }
+
+  /* ---------------- 32. IPv4 CIDR ---------------- */
+  function ipToInt(ip) {
+    var p = String(ip).trim().split('.');
+    if (p.length !== 4) return null;
+    var n = 0;
+    for (var i = 0; i < 4; i++) {
+      var v = Number(p[i]);
+      if (!/^\d+$/.test(p[i]) || v < 0 || v > 255) return null;
+      n = (n << 8) | v;
+    }
+    return n >>> 0;
+  }
+  function intToIp(n) {
+    n = n >>> 0;
+    return [(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join('.');
+  }
+  function cidrInfo(input) {
+    var s = String(input).trim();
+    var m = s.match(/^(\d{1,3}(?:\.\d{1,3}){3})(?:\/(\d{1,2}))?$/);
+    if (!m) return { ok: false, error: 'Enter an IPv4 address with optional prefix, e.g. 192.168.1.10/24' };
+    var prefix = m[2] === undefined ? 32 : Number(m[2]);
+    if (prefix < 0 || prefix > 32) return { ok: false, error: 'Prefix must be between 0 and 32.' };
+    var ip = ipToInt(m[1]);
+    if (ip === null) return { ok: false, error: 'Each octet must be 0-255.' };
+
+    var mask = prefix === 0 ? 0 : (0xffffffff << (32 - prefix)) >>> 0;
+    var wildcard = (~mask >>> 0) >>> 0;
+    var network = (ip & mask) >>> 0;
+    var broadcast = (network | wildcard) >>> 0;
+    var total = Math.pow(2, 32 - prefix);
+    var hosts;
+    if (prefix === 32) hosts = 1;
+    else if (prefix === 31) hosts = 2;
+    else hosts = total - 2;
+    var first = prefix >= 31 ? network : (network + 1) >>> 0;
+    var last = prefix >= 31 ? broadcast : (broadcast - 1) >>> 0;
+    var a = (ip >>> 24) & 255;
+    var b = (ip >>> 16) & 255;
+    var isPrivate = a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || a === 127;
+
+    return {
+      ok: true,
+      address: m[1],
+      prefix: prefix,
+      netmask: intToIp(mask),
+      wildcard: intToIp(wildcard),
+      network: intToIp(network),
+      broadcast: intToIp(broadcast),
+      cidr: intToIp(network) + '/' + prefix,
+      firstHost: intToIp(first),
+      lastHost: intToIp(last),
+      addressCount: total,
+      usableHosts: hosts,
+      isPrivate: isPrivate,
+      scope: isPrivate ? 'Private (RFC 1918) / loopback' : 'Public',
+      binaryMask: (mask >>> 0).toString(2).padStart(32, '0').replace(/(.{8})(?=.)/g, '$1.'),
+    };
+  }
+
+  /* ---------------- 33. Unicode 检查器 ---------------- */
+  function unicodePoints(text) {
+    var arr = Array.from(String(text));
+    var out = [];
+    for (var i = 0; i < arr.length && out.length < 400; i++) {
+      var ch = arr[i];
+      var cp = ch.codePointAt(0);
+      out.push({
+        char: ch,
+        codePoint: cp,
+        hex: 'U+' + cp.toString(16).toUpperCase().padStart(4, '0'),
+        dec: cp,
+        bytes: new TextEncoder().encode(ch).length,
+        html: '&#' + cp + ';',
+        type: /\s/.test(ch) ? 'whitespace' : /[\x00-\x1f\x7f]/.test(ch) ? 'control' : cp > 0xffff ? 'supplementary' : 'basic',
+      });
+    }
+    return { ok: true, points: out, total: arr.length, truncated: arr.length > 400 };
+  }
+
   var api = {
     escapeHtml: escapeHtml,
     fmtJson: fmtJson,
@@ -923,6 +1327,20 @@
     decodeJwt: decodeJwt,
     mdToHtml: mdToHtml,
     formatBytes: formatBytes,
+    b32Encode: b32Encode,
+    b32Decode: b32Decode,
+    toMorse: toMorse,
+    fromMorse: fromMorse,
+    toRoman: toRoman,
+    fromRoman: fromRoman,
+    reverseText: reverseText,
+    randomNumbers: randomNumbers,
+    percentCalc: percentCalc,
+    ageFromDate: ageFromDate,
+    dateDiff: dateDiff,
+    aspectRatio: aspectRatio,
+    cidrInfo: cidrInfo,
+    unicodePoints: unicodePoints,
   };
 
   globalThis.ToolCore = api;
