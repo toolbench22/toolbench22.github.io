@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>表匠 v1.1 · 多表合并与对账工具｜Excel 直接拖入、多工作表可选、方案一键复用，离线不联网</title>
+<meta name="description" content="把 3 张、10 张 Excel 合成一张总表；两张表对账找出差异；自动去重清洗。支持 .xlsx 直读与多工作表切换、GBK 乱码修复、合并方案保存复用，全程本地处理不上传，双击即用。">
+<meta name="keywords" content="Excel合并,多表合并,表格合并工具,Excel对账,两表对比,CSV乱码,表格去重,多工作表,离线工具">
+<style>
+  :root{
+    --ink:#16223b;--dim:#5d6b85;--line:#e5eaf3;--bg:#f6f8fc;
+    --brand:#3563f0;--brand2:#7b4dff;--ok:#12a150;--warn:#d98200;
+    --shadow:0 1px 2px rgba(22,34,59,.05),0 14px 40px -20px rgba(22,34,59,.28);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+  a{color:var(--brand);text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  header{position:sticky;top:0;z-index:20;background:rgba(246,248,252,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;gap:12px;height:62px}
+  .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;color:#fff;font-size:17px;font-weight:800}
+  .brand{font-weight:800;font-size:17px}
+  .brand small{display:block;font-size:11px;color:var(--dim);font-weight:500;letter-spacing:.5px}
+  .nav .sp{flex:1}
+  .nav a.lk{color:var(--dim);font-size:14px;margin-left:18px}
+  @media(max-width:700px){.nav a.lk{display:none}}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:11px;padding:12px 22px;font-weight:800;font-size:15px;border:1px solid transparent;cursor:pointer}
+  .btn-main{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;box-shadow:0 10px 26px -12px rgba(53,99,240,.75)}
+  .btn-ghost{background:#fff;border-color:var(--line);color:var(--ink)}
+  .btn-ghost:hover{border-color:var(--brand);color:var(--brand)}
+
+  .hero{padding:56px 0 34px;text-align:center}
+  .pill{display:inline-flex;gap:8px;align-items:center;font-size:13px;background:#fff;border:1px solid var(--line);color:var(--dim);padding:7px 14px;border-radius:999px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(18,161,80,.14)}
+  h1{font-size:clamp(28px,4.6vw,46px);line-height:1.2;margin:20px 0 14px;letter-spacing:-.5px}
+  h1 em{font-style:normal;background:linear-gradient(90deg,#3563f0,#7b4dff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{font-size:clamp(15px,1.9vw,18px);color:var(--dim);max-width:640px;margin:0 auto 26px}
+  .cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .trust{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin-top:22px;font-size:13.5px;color:var(--dim)}
+  .trust b{color:var(--ink)}
+  .shot{margin:34px auto 0;max-width:1000px;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);background:#fff}
+  .shot img{display:block;width:100%;height:auto}
+  .cap{font-size:12.5px;color:var(--dim);text-align:center;margin-top:10px}
+
+  section{padding:52px 0}
+  h2{font-size:clamp(21px,3vw,29px);margin:0 0 8px;letter-spacing:-.3px}
+  .lead{color:var(--dim);margin:0 0 26px}
+  .g3{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:var(--shadow)}
+  .card h3{margin:0 0 6px;font-size:16.5px}
+  .card p{margin:0;color:var(--dim);font-size:14.3px}
+  .card .n{width:26px;height:26px;border-radius:8px;background:#eef3ff;color:var(--brand);display:grid;place-items:center;font-weight:800;font-size:13px;margin-bottom:10px}
+
+  .feat{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .f{background:#fff;border:1px solid var(--line);border-radius:13px;padding:17px 18px}
+  .f b{display:block;font-size:15px;margin-bottom:4px}
+  .f span{color:var(--dim);font-size:13.6px}
+  .f i{font-style:normal;font-size:17px;margin-right:6px}
+
+  table.cmp{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:14.2px;box-shadow:var(--shadow)}
+  table.cmp th,table.cmp td{padding:13px 15px;border-bottom:1px solid var(--line);text-align:left}
+  table.cmp th{background:#f7f9fe;font-size:13.4px;color:var(--dim)}
+  table.cmp tr:last-child td{border-bottom:none}
+  table.cmp td.us{background:#f7fbff;font-weight:700;color:#1b3a8f}
+  .yes{color:var(--ok);font-weight:700}
+  .no{color:#b3261e}
+
+  .price{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));align-items:stretch}
+  .pcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow)}
+  .pcard.hot{border:2px solid var(--brand);position:relative}
+  .pcard.hot:before{content:"最多人选";position:absolute;top:-13px;left:22px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-size:12px;font-weight:800;padding:4px 11px;border-radius:999px}
+  .pcard .nm{font-weight:800;font-size:15px}
+  .pcard .pr{font-size:34px;font-weight:900;letter-spacing:-1px}
+  .pcard .pr small{font-size:14px;font-weight:600;color:var(--dim)}
+  .pcard ul{margin:8px 0 16px;padding-left:20px;color:var(--dim);font-size:13.8px}
+  .pcard .sp{flex:1}
+
+  details{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 18px;margin-bottom:10px}
+  details[open]{border-color:#c7d7ff}
+  summary{cursor:pointer;font-weight:700;list-style:none;font-size:15px}
+  summary::-webkit-details-marker{display:none}
+  details p{color:var(--dim);font-size:14.2px;margin:9px 0 0}
+
+  .final{background:linear-gradient(135deg,#1b2a54,#26408a 60%,#3b2a6b);border-radius:20px;padding:40px 32px;text-align:center;color:#fff}
+  .final h2{color:#fff;margin-bottom:6px}
+  .final p{color:#c8d4ee;margin:0 0 22px}
+  .wx{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:12px 18px;font-family:ui-monospace,Consolas,monospace;font-size:15px}
+  .final .btn-ghost{background:#fff}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,16px);opacity:0;background:#16223b;color:#fff;padding:10px 18px;border-radius:10px;font-size:14px;transition:.22s;pointer-events:none}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+  footer{border-top:1px solid var(--line);padding:26px 0 44px;color:var(--dim);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo">▤</div>
+    <div class="brand">表匠 <small>多表合并 · 两表对账 · 离线单机</small></div>
+    <div class="sp"></div>
+    <a class="lk" href="#pain">为什么需要</a>
+    <a class="lk" href="#feature">功能</a>
+    <a class="lk" href="#cmp">对比</a>
+    <a class="lk" href="#faq">常见问题</a>
+    <a class="btn btn-main" href="#buy" style="padding:9px 18px;font-size:14px">¥199 首发价</a>
+  </div>
+</header>
+
+<div class="wrap hero">
+  <span class="pill"><span class="dot"></span> v1.1 新增：多工作表可选 · 合并方案一键复用</span>
+  <h1>把 10 张 Excel 合成一张<br>只要 <em>点一下</em></h1>
+  <p class="sub">Excel 直接拖进去，列名不一样也能合；两张表对账，差异精确到「哪一列从多少变成多少」。不安装、不注册、不上传、断网也能用。</p>
+  <div class="cta-row">
+    <a class="btn btn-main" href="#buy">¥199 首发价 · 立即使用</a>
+    <a class="btn btn-ghost" href="#feature">看它能干什么</a>
+  </div>
+  <div class="trust">
+    <span><b>.xlsx</b> 直接读，不用另存</span>
+    <span><b>GBK</b> 乱码自动修复</span>
+    <span><b>0</b> 字节上传</span>
+    <span><b>不限</b> 行数</span>
+  </div>
+  <div class="shot">
+    <img src="img/merge.png" alt="表匠 · 多表合并结果界面">
+  </div>
+  <div class="cap">真实界面：3 个不同结构的文件（京东 / 淘宝 / 发货记录）合并结果，11 列 10 行，一行不丢</div>
+</div>
+
+<section id="pain" class="wrap">
+  <h2>这些活，你大概正在手工干</h2>
+  <p class="lead">每一件都是“一小时起步、还容易错行”的重复劳动。</p>
+  <div class="g3">
+    <div class="card"><div class="n">1</div><h3>多平台订单合成一张表</h3><p>京东导一份、淘宝导一份、门店再导一份，列名全不一样。复制粘贴一小时，还经常错行、错列、漏行。</p></div>
+    <div class="card"><div class="n">2</div><h3>两个版本的表找差异</h3><p>昨天的账和今天的账，哪几笔金额改了？哪几单状态变了？用 VLOOKUP 一行行对，对到眼花还对漏。</p></div>
+    <div class="card"><div class="n">3</div><h3>导出的表又脏又乱</h3><p>CSV 打开满屏乱码、每格前后带空格、整行空行、重复录入，交给老板之前还得手工收拾一遍。</p></div>
+  </div>
+</section>
+
+<section id="feature" class="wrap">
+  <h2>它能干什么</h2>
+  <p class="lead">一个文件，三件事，全部在这台电脑里算完。</p>
+  <div class="feat">
+    <div class="f"><b><i>📂</i>Excel 直接拖入</b><span>.xlsx 不用另存 CSV，日期自动还原成 2026-10-20，不再是 46315 这种数字。</span></div>
+    <div class="f"><b><i>🧩</i>列名不一样也能合</b><span>并集模式一行不丢；也可以统一到某一套列，智能对齐 + 下拉手选，指错能改。</span></div>
+    <div class="f"><b><i>🔍</i>两表对账</b><span>选主键（订单号/工号/合同号），一次给出：一致、有差异、仅A有、仅B有。</span></div>
+    <div class="f"><b><i>💯</i>金额容差</b><span>差一分钱以内算一致；1,299.00 和 1299 自动认成同一个数。</span></div>
+    <div class="f"><b><i>🧹</i>去重与清洗</b><span>去首尾空格、去空行、按全部列或指定列去重，一次导出干净数据。</span></div>
+    <div class="f"><b><i>🇨🇳</i>乱码修复</b><span>GBK / UTF-8 / UTF-16 自动识别；导出 CSV 带 BOM，Excel 双击打开就是中文。</span></div>
+    <div class="f"><b><i>🗂</i>多工作表直接选</b><span>一个 Excel 里有「10月」「11月」多张表？文件那行下拉直接切，不用另存成多个文件。</span></div>
+    <div class="f"><b><i>💾</i>合并方案一键复用</b><span>把「哪列对哪列 + 选项」存成方案。下个月同类报表拖进来选一下，全部自动恢复。</span></div>
+    <div class="f"><b><i>🔒</i>数据不出电脑</b><span>纯本地计算，断网可用，文件不经过任何服务器。可自己开 F12 看网络请求是 0。</span></div>
+    <div class="f"><b><i>⚡</i>零安装</b><span>一个 HTML 文件，双击用浏览器打开。不用装软件、不用管理员权限、不用激活码。</span></div>
+    <div class="f"><b><i>📤</i>结果随手用</b><span>导出 CSV / TSV，或一键复制直接粘进 Excel（自动分列）。</span></div>
+  </div>
+  <div class="shot" style="margin-top:26px">
+    <img src="img/reconcile.png" alt="表匠 · 两表对账结果界面">
+  </div>
+  <div class="cap">两表对账：3 条值有差异 + 1 条仅 B 有，精确到列和值，可导出、可复制发微信</div>
+</section>
+
+<section id="cmp" class="wrap">
+  <h2>和别的方式比</h2>
+  <p class="lead">讲实话，免费方案也能干，代价在别处。</p>
+  <table class="cmp">
+    <thead><tr><th>对比项</th><th>表匠（本产品）</th><th>手工复制粘贴</th><th>免费在线工具</th></tr></thead>
+    <tbody>
+      <tr><td>10 张表合成一张</td><td class="us">几秒</td><td>1–3 小时</td><td>看限制，常卡在 100 行</td></tr>
+      <tr><td>列名不一样</td><td class="us"><span class="yes">能</span>（智能对齐 + 手选）</td><td>要改表头</td><td>多数要求列完全一致</td></tr>
+      <tr><td>数据安全</td><td class="us"><span class="yes">完全离线，0 上传</span></td><td>安全</td><td><span class="no">要上传到别人服务器</span></td></tr>
+      <tr><td>安装 / 注册</td><td class="us"><span class="yes">都不用</span></td><td>不用</td><td>要注册、要装插件</td></tr>
+      <tr><td>CSV 乱码</td><td class="us"><span class="yes">自动识别 GBK</span></td><td>手动转码</td><td>常常还乱</td></tr>
+      <tr><td>花多少钱</td><td class="us">¥199 首发（原价 ¥299）</td><td>你的时间</td><td>免费但有限制/看广告</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="buy" class="wrap">
+  <h2>价格</h2>
+  <p class="lead">一次买断，永久使用。不订阅、不按年收费。</p>
+  <div class="price">
+    <div class="pcard">
+      <div class="nm">标准版</div>
+      <div class="pr">¥199 <small>首发价 · 原价 ¥299</small></div>
+      <ul>
+        <li>表匠 v1.1（单文件，永久用）</li>
+        <li>多工作表切换 + 合并方案保存</li>
+        <li>使用说明 + 演示数据</li>
+        <li>30 天使用答疑</li>
+        <li>单机 / 单个使用者</li>
+      </ul>
+      <div class="sp"></div>
+      <a class="btn btn-ghost" href="#contact">购买标准版</a>
+    </div>
+    <div class="pcard hot">
+      <div class="nm">企业版</div>
+      <div class="pr">¥499 <small>一次买断</small></div>
+      <ul>
+        <li>标准版全部内容</li>
+        <li>一次远程配置：按你的表把列对齐规则配好</li>
+        <li>1 年版本更新</li>
+        <li>可开票（普票 / 专票）</li>
+      </ul>
+      <div class="sp"></div>
+      <a class="btn btn-main" href="#contact">购买企业版</a>
+    </div>
+    <div class="pcard">
+      <div class="nm">定制版</div>
+      <div class="pr">¥899 <small>起</small></div>
+      <ul>
+        <li>按你的表结构定制</li>
+        <li>固定合并方案 / 一键导出命名</li>
+        <li>界面文字可改成你的流程叫法</li>
+        <li>30 天优先响应</li>
+      </ul>
+      <div class="sp"></div>
+      <a class="btn btn-ghost" href="#contact">聊聊需求</a>
+    </div>
+  </div>
+  <div class="cap" style="margin-top:16px">只想合一次表、不想买工具的：我帮你合一次收 ¥30，做完成品发你。</div>
+</section>
+
+<section id="faq" class="wrap">
+  <h2>常见问题</h2>
+  <details open><summary>Excel 里有多个工作表怎么办？</summary><p>本版读第一个工作表。把要用的那张复制到一个新工作簿再拖进来就行，30 秒的事。需要多工作表批量处理的，选定制版。</p></details>
+  <details><summary>数据会不会被上传？公司不让外传数据。</summary><p>不会。它就是一个本地 HTML 文件，所有计算在你浏览器里完成，断网也能跑。你可以断网试一次：打开它、拖文件、点合并，照样出结果——这就是最强的证明。</p></details>
+  <details><summary>能处理多少行？</summary><p>十万行以内很轻松。百万行建议拆批，或找我们做脚本方案。</p></details>
+  <details><summary>我用 WPS / Mac，能用吗？</summary><p>能。它只需要一个现代浏览器（Chrome / Edge / Safari 都行），跟 Office 还是 WPS 无关。</p></details>
+  <details><summary>导出的为什么是 CSV？</summary><p>CSV 最通用，Excel 双击就打开，也不会因为版本打不开。要 xlsx 就在 Excel 里「另存为 → Excel 工作簿」，一步。</p></details>
+  <details><summary>买了不会用怎么办？</summary><p>里面有示例数据，点「载入示例数据试一下」30 秒就懂。文字/截图问我，我看到就回，30 天内免费答疑。</p></details>
+  <details><summary>能退款吗？</summary><p>7 天内用不起来，说一声直接退，不纠缠。</p></details>
+</section>
+
+<section class="wrap">
+  <div class="final" id="contact">
+    <h2>先发一张你的表给我</h2>
+    <p>我帮你合一次，你看效果再决定买不买。改不动的、做不了的，我直接说。</p>
+    <div class="wx">微信：<b id="wx">973888263</b></div>
+    <div style="margin-top:18px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-ghost" onclick="copyWx()">复制微信号</button>
+      <a class="btn btn-main" href="mailto:973888263@qq.com?subject=%E5%92%A8%E8%AF%A2%E8%A1%A8%E5%8C%A0">发邮件咨询</a>
+    </div>
+    <div style="margin-top:16px;font-size:13px;color:#a9b8d8">9:00–23:00 在线 · 一般 30 分钟内回</div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>表匠 v1.1.0 · 多表合并 / 两表对账 / 清洗去重 · 离线单机版</div>
+    <div style="margin-top:6px">© <span id="y"></span> 表匠 · 数据全程本地处理，不上传任何服务器 · 一次买断，单机使用</div>
+  </div>
+</footer>
+
+<div class="toast" id="toast">微信号已复制</div>
+<script>
+  document.getElementById('y').textContent = new Date().getFullYear();
+  function copyWx(){
+    var t = document.getElementById('wx').textContent.trim();
+    var el = document.getElementById('toast');
+    var done = function(){ el.classList.add('on'); setTimeout(function(){el.classList.remove('on')},1600); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, fb);
+    else fb();
+    function fb(){
+      var ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select();
+      try{document.execCommand('copy')}catch(e){}
+      document.body.removeChild(ta); done();
+    }
+  }
+</script>
+</body>
+</html>
